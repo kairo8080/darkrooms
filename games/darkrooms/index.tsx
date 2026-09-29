@@ -127,39 +127,112 @@ function paintFriend(ctx: CanvasRenderingContext2D, rows: readonly string[], cen
 
 /* ───────────────────────── sound ───────────────────────── */
 
-type Cue = "step" | "bonk" | "fall" | "flash" | "dark" | "clear" | "purchase" | "reveal" | "sell";
-const CUES: Readonly<Record<Cue, readonly (readonly [number, number, number, number?, number?])[]>> = {
-  step: [[520, 0.04, 0.03]],
-  bonk: [[130, 0.14, 0.07, 70]],
-  fall: [[760, 0.55, 0.06, 55]],
-  flash: [[880, 0.08, 0.04], [1175, 0.1, 0.04, undefined, 0.09]],
-  dark: [[120, 0.32, 0.08, 55]],
-  clear: [[523, 0.12, 0.05], [659, 0.12, 0.05, undefined, 0.09], [784, 0.12, 0.05, undefined, 0.18], [1047, 0.16, 0.05, undefined, 0.27]],
-  purchase: [[660, 0.08, 0.04], [990, 0.1, 0.04, undefined, 0.08]],
-  reveal: [[392, 0.1, 0.05], [523, 0.1, 0.05, undefined, 0.1], [784, 0.2, 0.05, undefined, 0.2]],
-  sell: [[1047, 0.08, 0.04], [1319, 0.12, 0.04, undefined, 0.08]],
-};
+/**
+ * A tiny chip-style synth: three pulse duties, a triangle bass and a noise channel,
+ * with volume and pitch stepped at 60 frames per second like an 8/16-bit sound chip.
+ * Every sound is generated in code; there are no audio files.
+ */
+type Cue = "step" | "bonk" | "fall" | "flash" | "tick" | "dark" | "clear" | "purchase" | "anticipate" | "reveal" | "sell" | "select";
+type Channel = "p12" | "p25" | "p50" | "tri" | "noise";
+type Note = Readonly<{ ch: Channel; m: number; t: number; d: number; v: number; to?: number; hold?: boolean }>;
+const FRAME = 1 / 60;
+const hz = (midi: number) => 440 * 2 ** ((midi - 69) / 12);
+const arp = (ch: Channel, notes: readonly number[], gap: number, d: number, v: number, t0 = 0): Note[] =>
+  notes.map((m, i) => ({ ch, m, t: t0 + i * gap, d, v }));
+
+function cueNotes(cue: Cue, arg = 0): Note[] {
+  switch (cue) {
+    case "step": return [{ ch: "p25", m: arg % 2 ? 79 : 84, t: 0, d: 0.034, v: 0.16 }, { ch: "noise", m: 100, t: 0, d: 0.017, v: 0.05 }];
+    case "bonk": return [{ ch: "noise", m: 40, t: 0, d: 0.07, v: 0.45 }, { ch: "tri", m: 40, to: 28, t: 0, d: 0.1, v: 0.5 }];
+    case "fall": return [{ ch: "p12", m: 86, to: 45, t: 0, d: 0.55, v: 0.28 }, { ch: "p25", m: 74, to: 33, t: 0.02, d: 0.55, v: 0.12 },
+      { ch: "noise", m: 30, t: 0.52, d: 0.28, v: 0.35 }, { ch: "tri", m: 31, t: 0.52, d: 0.22, v: 0.5, hold: true }];
+    case "flash": return [...arp("p50", [72, 76, 79, 84], 0.04, 0.05, 0.2), { ch: "p12", m: 88, to: 96, t: 0.16, d: 0.24, v: 0.08 }, { ch: "tri", m: 48, t: 0, d: 0.2, v: 0.35, hold: true }];
+    case "tick": return [{ ch: "p50", m: 76 + Math.round(arg * 14), t: 0, d: 0.025, v: 0.07 + arg * 0.08 }];
+    case "dark": return [{ ch: "noise", m: 110, t: 0, d: 0.025, v: 0.35 }, { ch: "tri", m: 45, to: 30, t: 0.02, d: 0.34, v: 0.6, hold: true }, { ch: "p12", m: 60, to: 48, t: 0.02, d: 0.2, v: 0.06 }];
+    case "clear": return [{ ch: "tri", m: 48, t: 0, d: 0.2, v: 0.45, hold: true }, { ch: "tri", m: 55, t: 0.21, d: 0.3, v: 0.45, hold: true },
+      ...arp("p25", [72, 76, 79], 0.07, 0.065, 0.22), { ch: "p25", m: 84, t: 0.21, d: 0.3, v: 0.22 }, ...arp("p12", [79, 84, 88], 0.035, 0.26, 0.09, 0.21)];
+    case "purchase": return [{ ch: "p50", m: 83, t: 0, d: 0.06, v: 0.2 }, { ch: "p50", m: 88, t: 0.06, d: 0.3, v: 0.2 }];
+    case "anticipate": return [...Array.from({ length: 12 }, (_, i) => ({ ch: "p25" as Channel, m: 60 + Math.floor(i / 2) + (i % 2 ? 7 : 0), t: i * 0.035, d: 0.03, v: 0.12 + i * 0.008 })),
+      { ch: "noise", m: 70, to: 110, t: 0, d: 0.42, v: 0.08 }];
+    case "reveal": {
+      const rarity = Math.max(0, Math.min(6, arg));
+      if (rarity === 0) return [{ ch: "p25", m: 55, t: 0, d: 0.12, v: 0.2 }, { ch: "p25", m: 50, to: 46, t: 0.13, d: 0.28, v: 0.2 }, { ch: "tri", m: 38, t: 0.13, d: 0.28, v: 0.4, hold: true }];
+      if (rarity <= 2) return [{ ch: "p25", m: 72, t: 0, d: 0.07, v: 0.2 }, { ch: "p25", m: 79, t: 0.08, d: 0.2, v: 0.2 }, { ch: "tri", m: 48, t: 0, d: 0.28, v: 0.35, hold: true }];
+      if (rarity === 3) return [...arp("p25", [72, 76, 79], 0.07, 0.065, 0.2), { ch: "p25", m: 84, t: 0.21, d: 0.26, v: 0.2 }, { ch: "tri", m: 48, t: 0, d: 0.47, v: 0.4, hold: true }];
+      if (rarity === 4) return [...arp("p25", [72, 76, 79, 84], 0.06, 0.055, 0.2), { ch: "p25", m: 88, t: 0.24, d: 0.3, v: 0.2 },
+        ...arp("p12", [84, 88, 91], 0.03, 0.28, 0.08, 0.24), { ch: "tri", m: 48, t: 0, d: 0.24, v: 0.4, hold: true }, { ch: "tri", m: 55, t: 0.24, d: 0.3, v: 0.4, hold: true }];
+      if (rarity === 5) return [...arp("p50", [72, 76, 79, 84, 88, 91, 96, 100], 0.045, 0.045, 0.17), { ch: "p12", m: 96, t: 0.36, d: 0.4, v: 0.1 },
+        { ch: "p25", m: 84, t: 0.36, d: 0.4, v: 0.14 }, { ch: "tri", m: 48, t: 0, d: 0.36, v: 0.4, hold: true }, { ch: "tri", m: 60, t: 0.36, d: 0.4, v: 0.4, hold: true }];
+      return [ // The Last Light: a short fanfare
+        ...[[72, 0], [72, 0.1], [72, 0.2], [77, 0.3], [79, 0.5], [84, 0.7]].map(([m, t]) => ({ ch: "p25" as Channel, m, t, d: m === 84 ? 0.6 : 0.09, v: 0.22 })),
+        ...[[67, 0], [67, 0.1], [67, 0.2], [72, 0.3], [74, 0.5], [79, 0.7]].map(([m, t]) => ({ ch: "p12" as Channel, m, t, d: m === 79 ? 0.6 : 0.09, v: 0.1 })),
+        ...[[48, 0], [53, 0.3], [55, 0.5], [48, 0.7]].map(([m, t]) => ({ ch: "tri" as Channel, m, t, d: m === 48 && t ? 0.6 : 0.19, v: 0.45, hold: true })),
+        { ch: "noise", m: 120, t: 0.7, d: 0.5, v: 0.06 }];
+    }
+    case "sell": return [{ ch: "p50", m: 88, t: 0, d: 0.05, v: 0.18 }, { ch: "p50", m: 93, t: 0.05, d: 0.16, v: 0.18 }, { ch: "p50", m: 93, t: 0.24, d: 0.12, v: 0.1 }];
+    case "select": return [{ ch: "p50", m: 91, t: 0, d: 0.022, v: 0.08 }];
+  }
+}
+
+function pulseWave(audio: AudioContext, duty: number) {
+  const size = 48, real = new Float32Array(size), imag = new Float32Array(size);
+  for (let k = 1; k < size; k++) {
+    real[k] = Math.sin(2 * Math.PI * k * duty) / (k * Math.PI);
+    imag[k] = (1 - Math.cos(2 * Math.PI * k * duty)) / (k * Math.PI);
+  }
+  return audio.createPeriodicWave(real, imag);
+}
+
 function createSynth() {
-  let audio: AudioContext | null = null;
+  let audio: AudioContext | null = null, master: GainNode | null = null, noise: AudioBuffer | null = null;
+  let waves: Record<"p12" | "p25" | "p50", PeriodicWave> | null = null;
   return {
     unlock() {
       try {
-        audio ??= new AudioContext();
+        if (!audio) {
+          audio = new AudioContext();
+          master = audio.createGain(); master.gain.value = 0.55; master.connect(audio.destination);
+          waves = { p12: pulseWave(audio, 0.125), p25: pulseWave(audio, 0.25), p50: pulseWave(audio, 0.5) };
+          // 1 s of stepped white noise, held for 4 samples for a crunchy, chip-like hiss.
+          noise = audio.createBuffer(1, audio.sampleRate, audio.sampleRate);
+          const data = noise.getChannelData(0);
+          for (let i = 0, value = 0; i < data.length; i++) { if (i % 4 === 0) value = Math.random() * 2 - 1; data[i] = value; }
+        }
         if (audio.state === "suspended") void audio.resume();
       } catch { audio = null; }
     },
-    play(cue: Cue) {
-      if (!audio || audio.state !== "running") return;
-      const now = audio.currentTime;
-      for (const [freq, duration, volume, slideTo, delay = 0] of CUES[cue]) {
-        const osc = audio.createOscillator(), gain = audio.createGain(), start = now + delay;
-        osc.type = "square"; osc.frequency.setValueAtTime(freq, start);
-        if (slideTo) osc.frequency.exponentialRampToValueAtTime(slideTo, start + duration);
-        gain.gain.setValueAtTime(volume, start); gain.gain.exponentialRampToValueAtTime(0.0001, start + duration);
-        osc.connect(gain).connect(audio.destination); osc.start(start); osc.stop(start + duration + 0.02);
+    play(cue: Cue, arg = 0) {
+      if (!audio || !master || !waves || !noise || audio.state === "closed") return;
+      const now = audio.currentTime + 0.005;
+      for (const note of cueNotes(cue, arg)) {
+        const start = now + note.t, frames = Math.max(1, Math.round(note.d / FRAME)), end = start + frames * FRAME;
+        const gain = audio.createGain();
+        gain.gain.setValueAtTime(0, now);
+        // Stepped decay, one volume step per frame; "hold" notes stay flat like a triangle channel.
+        for (let f = 0; f < frames; f++) gain.gain.setValueAtTime(note.v * (note.hold ? 1 : Math.max(0.08, 1 - f / frames)), start + f * FRAME);
+        gain.gain.setValueAtTime(0, end);
+        gain.connect(master);
+        if (note.ch === "noise") {
+          const source = audio.createBufferSource(), filter = audio.createBiquadFilter();
+          source.buffer = noise; source.loop = true;
+          filter.type = "bandpass"; filter.Q.value = 0.8;
+          for (let f = 0; f < frames; f++) {
+            const m = note.to === undefined ? note.m : note.m + (note.to - note.m) * (f / frames);
+            filter.frequency.setValueAtTime(Math.min(18000, hz(m / 2 + 40)), start + f * FRAME);
+          }
+          source.connect(filter).connect(gain); source.start(start, Math.random()); source.stop(end + 0.02);
+        } else {
+          const osc = audio.createOscillator();
+          if (note.ch === "tri") osc.type = "triangle"; else osc.setPeriodicWave(waves[note.ch]);
+          for (let f = 0; f < frames; f++) {
+            const m = note.to === undefined ? note.m : note.m + (note.to - note.m) * (f / frames);
+            osc.frequency.setValueAtTime(hz(Math.round(m)), start + f * FRAME);
+          }
+          osc.connect(gain); osc.start(start); osc.stop(end + 0.02);
+        }
       }
     },
-    dispose() { void audio?.close(); audio = null; },
+    dispose() { void audio?.close(); audio = null; master = null; waves = null; noise = null; },
   };
 }
 
@@ -169,13 +242,13 @@ type Phase = "intro" | "flash" | "walk" | "fell" | "door";
 type Menu = "shop" | "relics" | "settings" | "reveal" | null;
 type Engine = {
   room: Room | null; pos: Point; disp: Point; facing: SpriteFacing; side: "left" | "right"; trail: Point[];
-  steps: number; near: number; bonks: number; phase: Phase; flashLeft: number;
+  steps: number; near: number; bonks: number; phase: Phase; flashLeft: number; tick: number;
   fallAt: number; bonkAt: number; walkUntil: number; wallFlash: { i: number; until: number } | null;
 };
 type Layout = { T: number; ox: number; oy: number; bw: number; bh: number };
 const freshEngine = (): Engine => ({
   room: null, pos: { x: 0, y: 0 }, disp: { x: 0, y: 0 }, facing: "right", side: "right", trail: [],
-  steps: 0, near: 0, bonks: 0, phase: "intro", flashLeft: 0, fallAt: 0, bonkAt: 0, walkUntil: 0, wallFlash: null,
+  steps: 0, near: 0, bonks: 0, phase: "intro", flashLeft: 0, tick: 0, fallAt: 0, bonkAt: 0, walkUntil: 0, wallFlash: null,
 });
 const rf = (value: bigint) => `${formatGameAmount(value, 18)} RF`;
 const plural = (n: number, one: string, many = `${one}s`) => `${n} ${n === 1 ? one : many}`;
@@ -209,7 +282,7 @@ export default function Darkrooms({ friendId, client, paused }: GameComponentPro
   const [menu, setMenu] = useState<Menu>(null), [busy, setBusy] = useState(false);
   const [error, setError] = useState(""), [message, setMessage] = useState("");
   const [result, setResult] = useState<GamePlay | null>(null);
-  const [muted, setMuted] = useState(true), [reducedMotion, setReducedMotion] = useState(false);
+  const [muted, setMuted] = useState(false), [reducedMotion, setReducedMotion] = useState(false);
   const [announce, setAnnounce] = useState("");
   const [size, setSize] = useState({ width: 960, height: 640 });
 
@@ -219,7 +292,8 @@ export default function Darkrooms({ friendId, client, paused }: GameComponentPro
   const demoRoom = useMemo(() => generateRoom(3, false, 20260930), []);
   const ready = Boolean(snapshot && sprites && !loadError);
 
-  const sfx = (cue: Cue) => { if (!live.current.muted) synth.current?.play(cue); };
+  const sfx = (cue: Cue, arg = 0) => { if (!live.current.muted) synth.current?.play(cue, arg); };
+  const openMenu = (next: Menu) => { sfx("select"); setMenu(next); };
 
   // Load the Friend's canonical artwork and the session snapshot together.
   useEffect(() => {
@@ -243,7 +317,14 @@ export default function Darkrooms({ friendId, client, paused }: GameComponentPro
     const change = () => setReducedMotion(preference.matches); change();
     preference.addEventListener("change", change);
     synth.current = createSynth();
-    return () => { preference.removeEventListener("change", change); synth.current?.dispose(); synth.current = null; };
+    // Browsers only start audio from a gesture: unlock on the first tap, click or key press.
+    const unlock = () => { if (!live.current.muted) synth.current?.unlock(); };
+    window.addEventListener("pointerdown", unlock); window.addEventListener("keydown", unlock);
+    return () => {
+      preference.removeEventListener("change", change);
+      window.removeEventListener("pointerdown", unlock); window.removeEventListener("keydown", unlock);
+      synth.current?.dispose(); synth.current = null;
+    };
   }, []);
 
   useEffect(() => {
@@ -270,7 +351,7 @@ export default function Darkrooms({ friendId, client, paused }: GameComponentPro
     const room = generateRoom(n, tall, randomSeed());
     Object.assign(engine.current, {
       room, pos: { ...room.start }, disp: { ...room.start }, trail: [{ ...room.start }],
-      steps: 0, near: 0, bonks: 0, phase: "flash" as Phase, flashLeft: room.flashMs,
+      steps: 0, near: 0, bonks: 0, phase: "flash" as Phase, flashLeft: room.flashMs, tick: 0,
       fallAt: 0, bonkAt: 0, walkUntil: 0, wallFlash: null, facing: tall ? "up" : "right",
     });
     setRoomN(n); setStats({ steps: 0, near: 0, bonks: 0 }); setVaultOpened(false); setPhase("flash"); setError(""); setMessage("");
@@ -308,7 +389,7 @@ export default function Darkrooms({ friendId, client, paused }: GameComponentPro
         e.phase = "door"; setPhase("door"); setBest(value => Math.max(value, room.n));
         setAnnounce(`Room ${room.n} cleared. You found the vault.`);
         sfx("clear");
-      } else sfx("step");
+      } else sfx("step", e.steps);
     }
     setStats({ steps: e.steps, near: e.near, bonks: e.bonks });
     const node = board.current;
@@ -349,8 +430,10 @@ export default function Darkrooms({ friendId, client, paused }: GameComponentPro
       ctx.fillStyle = "#000"; ctx.fillRect(0, 0, width, height);
 
       // The light fades on its own schedule, paused while menus or the runtime hold input.
-      if (e.phase === "flash" && !live.current.paused && !live.current.menu && !document.hidden) {
+      if (e.phase === "flash" && e.room && !live.current.paused && !live.current.menu && !document.hidden) {
         e.flashLeft -= dt;
+        const elapsed = e.room.flashMs - e.flashLeft, tick = Math.floor(elapsed / 250);
+        if (tick > e.tick && e.flashLeft > 0) { e.tick = tick; if (!live.current.muted) synth.current?.play("tick", Math.min(1, elapsed / e.room.flashMs)); }
         if (e.flashLeft <= 0) {
           e.phase = "walk"; setPhase("walk"); setAnnounce("Lights out. Walk from memory.");
           if (!live.current.muted) synth.current?.play("dark");
@@ -439,7 +522,7 @@ export default function Darkrooms({ friendId, client, paused }: GameComponentPro
   }
   const toggleSound = () => {
     const next = !muted; setMuted(next);
-    if (!next) { synth.current?.unlock(); window.setTimeout(() => synth.current?.play("purchase"), 60); }
+    if (!next) { synth.current?.unlock(); synth.current?.play("select"); }
   };
   const enter = () => { if (!muted) synth.current?.unlock(); startRoom(1); };
 
@@ -467,8 +550,13 @@ export default function Darkrooms({ friendId, client, paused }: GameComponentPro
     const settled = await client.settle(play.id);
     if (version !== epoch.current) return;
     if (settled.outcomeId === null) { setMessage("The vault is still unlocking. Finish it from Relics."); return; }
-    setResult(settled); setVaultOpened(true); setMenu("reveal");
-  }, "reveal");
+    const outcomeId = settled.outcomeId;
+    setVaultOpened(true);
+    sfx("anticipate");
+    await new Promise(done => window.setTimeout(done, live.current.muted ? 0 : 440));
+    if (version !== epoch.current) return;
+    setResult(settled); setMenu("reveal"); sfx("reveal", outcomeId - 1);
+  });
 
   const statLine = `${plural(stats.steps, "step")} · ${plural(stats.near, "near-miss", "near-misses")} · ${plural(stats.bonks, "bonk")}`;
   const feedback = <p className="dr-feedback" role={error ? "alert" : "status"}>{error || message || (busy ? "Waiting for confirmation…" : preview ? "Preview: RF, Keys and relics are simulated." : "Live: balances come from the contract.")}</p>;
@@ -495,10 +583,10 @@ export default function Darkrooms({ friendId, client, paused }: GameComponentPro
         <span className="dr-spacer" />
         <span className="dr-chip" title="Keys open vaults">{plural(Number(keys), "Key")}</span>
         <span className="dr-chip dr-soft dr-wide">{rf(snapshot.rfBalance)}{preview ? " · preview" : ""}</span>
-        <button type="button" onClick={() => setMenu("shop")}>Shop</button>
-        <button type="button" onClick={() => setMenu("relics")}>Relics{relicCount > 0n ? ` · ${relicCount}` : ""}</button>
+        <button type="button" onClick={() => openMenu("shop")}>Shop</button>
+        <button type="button" onClick={() => openMenu("relics")}>Relics{relicCount > 0n ? ` · ${relicCount}` : ""}</button>
         <button type="button" className="dr-wide" aria-pressed={!muted} onClick={toggleSound}>{muted ? "Sound off" : "Sound on"}</button>
-        <button type="button" aria-label="Settings" onClick={() => setMenu("settings")}>☰</button>
+        <button type="button" aria-label="Settings" onClick={() => openMenu("settings")}>☰</button>
       </header>
 
       {(phase === "flash" || phase === "walk") && <p className="dr-hint" aria-hidden="true">
@@ -536,7 +624,7 @@ export default function Darkrooms({ friendId, client, paused }: GameComponentPro
           : vaultOpened ? <p className="dr-dim">Vault opened. Your relic is in Relics.</p>
           : keys > 0n ? <button type="button" className="dr-primary" data-primary disabled={busy || paused} onClick={() => void openVault()}>Open the vault · 1 Key</button>
           : <><p className="dr-dim">The vault is locked. A Key costs {rf(definition.price)}{preview ? " (simulated)" : ""}.</p>
-            <button type="button" disabled={busy || paused} onClick={() => setMenu("shop")}>Get a Key</button></>}
+            <button type="button" disabled={busy || paused} onClick={() => openMenu("shop")}>Get a Key</button></>}
         <button type="button" className={vaultOpened || (!pending && keys === 0n) ? "dr-primary" : undefined}
           data-primary={vaultOpened || (!pending && keys === 0n) ? true : undefined} disabled={busy} onClick={() => startRoom(roomN + 1)}>Next room →</button>
         {feedback}
@@ -580,6 +668,7 @@ export default function Darkrooms({ friendId, client, paused }: GameComponentPro
       </div> : <>
         <button type="button" aria-pressed={!muted} onClick={toggleSound}>{muted ? "Sound off" : "Sound on"}</button>
         <label className="dr-check"><input type="checkbox" checked={reducedMotion} onChange={event => setReducedMotion(event.target.checked)} /> Reduce motion</label>
+        <p>Sound is on by default: chip-style effects for steps, walls, falls, the fading light and the vault. Turn it off here or with Sound in the top bar.</p>
         <p>Reduce motion removes the step glide, the bonk shake and the falling animation.</p>
         <p>Controls: arrow keys or WASD move one tile. On touch screens, tap the side of your Friend you want to step toward. Enter continues.</p>
         <p>{preview ? "All RF, Keys and relics are simulated in this preview. Reloading resets them." : "Keys and relics use live contract actions with wallet confirmation."} Wallet connection and Friend ownership are handled by the Rare Friends runtime.</p>

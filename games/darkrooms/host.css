@@ -1,4 +1,16 @@
-/* Trusted runtime layout: landscape by default, portrait on narrow phones. */
+/* Trusted runtime page (SDK host): a black page around the game and a 1-bit toolbar.
+   SDK menus and confirmations keep their own readable light styling. */
+html:root, html body { background: #000; }
+.rf-game-frame { background: #000; border-color: #333; }
+.rf-runtime-status { background: #000; color: #fff; }
+.rf-runtime-status .rf-frame-primary { background: #fff; color: #000; border-color: #fff; }
+.rf-game-frame .rf-frame-toolbar > *,
+.rf-game-frame .rf-frame-toolbar button { background: #000; color: #fff; border-color: #fff; }
+.rf-game-frame .rf-frame-toolbar button:hover:not(:disabled) { background: #fff; color: #000; }
+.rf-game-frame .rf-frame-toolbar button:focus-visible,
+.rf-runtime-status button:focus-visible { outline-color: #fff; }
+
+/* Landscape by default, portrait on narrow phones. */
 @media (max-width: 600px) and (orientation: portrait) {
   :root {
     --rf-game-max-width: 480px;

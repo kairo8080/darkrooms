@@ -21,8 +21,9 @@ the sandbox and all confirmations.
 | Enter / Space | Continue on the current card (Enter the dark, Try again, Next room) |
 | Shop, Relics, ☰ | Buy Keys, sell relics, sound and reduced-motion settings |
 
-Sound starts muted. Reduced motion (from the system setting or Settings)
-removes the step glide, the bonk shake and the falling animation. Gameplay input
+Sound is on by default and unlocks on the first tap or key press; turn it off
+with Sound in the top bar or in Settings. Reduced motion (from the system setting
+or Settings) removes the step glide, the bonk shake and the falling animation. Gameplay input
 stops while the runtime or a game menu is open, and the light's countdown pauses.
 
 ## Room rules
@@ -62,4 +63,12 @@ No trading, creator fees, wearable NFTs or persistence are implemented.
 The Friend is drawn from its canonical 16 × 16 Generations sprite (black mask,
 one-pixel white halo, integer scale, all eight walk and idle frames) read through
 the SDK sprite reader. Rooms, the door and relic icons are original 1-bit pixel
-art made for this game. Sounds are synthesized in code; there are no recordings.
+art made for this game. The page around the game is black too (`host.css`).
+
+Sound is a small chip-style synth written for this game: 12.5%, 25% and 50%
+pulse channels, a triangle bass and a noise channel, with volume and pitch
+stepped at 60 frames per second. Cues: alternating footsteps, a wall thud, a
+falling sweep, a light-on arpeggio, countdown ticks that rise as the light
+fades, a lights-out thump, a door fanfare, a coin for Keys, a build-up before
+each vault and a reveal jingle that grows with the relic's rarity. There are no
+audio files or recordings.

@@ -1,0 +1,5 @@
+{
+  "extends": "../../examples/tsconfig.json",
+  "compilerOptions": { "rootDir": "../.." },
+  "include": ["*.tsx", "../../examples/styles.d.ts"]
+}

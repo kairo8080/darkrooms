@@ -1,0 +1,78 @@
+name: DARKROOMS preview
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: preview
+  cancel-in-progress: true
+
+env:
+  # FriendSDK v0.1.4 (spokesz/friendsdk main, 29 Sep 2026)
+  FRIENDSDK_COMMIT: ca3bf183b809ecf22d87c63d88ce03969a3f8da2
+
+jobs:
+  preview:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Fetch FriendSDK and add DARKROOMS
+        run: |
+          git clone https://github.com/spokesz/friendsdk.git sdk
+          git -C sdk checkout "$FRIENDSDK_COMMIT"
+          cp -R games/darkrooms sdk/games/darkrooms
+          cp tests/darkrooms.browser.mjs sdk/darkrooms.browser.mjs
+
+      - name: Install and build FriendSDK
+        working-directory: sdk
+        run: |
+          npm ci
+          npm run build
+
+      - name: Validate the game (friendsdk check)
+        working-directory: sdk
+        run: npx friendsdk check games/darkrooms
+
+      - name: Build the static preview (friendsdk build)
+        working-directory: sdk
+        run: npx friendsdk build games/darkrooms
+
+      - name: Publish the preview to the gh-pages branch
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          cd sdk/games/darkrooms/.friendsdk
+          touch .nojekyll
+          git init -q -b gh-pages
+          git config user.name "github-actions[bot]"
+          git config user.email "41898333+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -qm "Preview from ${GITHUB_SHA::7}"
+          git push -f "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" gh-pages
+
+      - name: Typecheck
+        working-directory: sdk
+        run: npx tsc -p games/darkrooms/tsconfig.json
+
+      - name: Browser checks with the SDK mock wallet (desktop and phone)
+        working-directory: sdk
+        run: |
+          npx playwright install --with-deps chromium
+          node darkrooms.browser.mjs
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: darkrooms-checks
+          path: artifacts
+          if-no-files-found: ignore

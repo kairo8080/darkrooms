@@ -1,0 +1,14 @@
+{
+  "name": "DARKROOMS",
+  "consumable": "Key",
+  "price": "1000000000000000000",
+  "outcomes": [
+    { "name": "Burnt Match", "chanceBps": 1800, "reward": "0" },
+    { "name": "Bent Nail", "chanceBps": 2800, "reward": "250000000000000000" },
+    { "name": "Candle Stub", "chanceBps": 2200, "reward": "500000000000000000" },
+    { "name": "Glass Eye", "chanceBps": 1600, "reward": "1000000000000000000" },
+    { "name": "Silver Bell", "chanceBps": 900, "reward": "2000000000000000000" },
+    { "name": "Moth Lantern", "chanceBps": 500, "reward": "4000000000000000000" },
+    { "name": "The Last Light", "chanceBps": 200, "reward": "10000000000000000000" }
+  ]
+}

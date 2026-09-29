@@ -1,0 +1,87 @@
+/* DARKROOMS: strict 1-bit. Black ground, white light, one grey for the dot grid. */
+.dr-game{--ink:#000;--paper:#fff;--dim:#9b9b9b;--line:#333;position:relative;width:100%;height:100%;overflow:hidden;background:var(--ink);color:var(--paper);font:13px/1.45 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;-webkit-font-smoothing:antialiased}
+.dr-game *{box-sizing:border-box}
+.dr-stage{position:absolute;inset:0}
+.dr-board{position:absolute;inset:0;display:block;width:100%;height:100%;image-rendering:pixelated;touch-action:none;outline:none}
+.dr-board:focus-visible{outline:1px dashed #555;outline-offset:-3px}
+
+.dr-game button{font:inherit;font-weight:700;letter-spacing:.06em;text-transform:uppercase;min-height:34px;padding:7px 12px;border:2px solid var(--paper);border-radius:0;background:var(--ink);color:var(--paper);cursor:pointer}
+.dr-game button:hover:not(:disabled){background:var(--paper);color:var(--ink)}
+.dr-game button:disabled{opacity:.35;cursor:default}
+.dr-game button:focus-visible{outline:2px dashed var(--paper);outline-offset:3px}
+.dr-game .dr-primary{background:var(--paper);color:var(--ink)}
+.dr-game .dr-primary:hover:not(:disabled){background:var(--ink);color:var(--paper)}
+
+.dr-mark{margin:0;font-weight:800;font-size:15px;letter-spacing:.04em;white-space:nowrap}
+.dr-mark span,.dr-title span{background:var(--paper);color:var(--ink);padding:0 .12em;margin-left:.06em}
+
+.dr-hud{position:absolute;top:10px;left:14px;right:14px;display:flex;align-items:center;gap:6px;flex-wrap:nowrap;pointer-events:none}
+.dr-hud>*{pointer-events:auto}
+.dr-hud .dr-mark{margin-right:6px}
+.dr-chip{font-weight:700;font-size:11px;letter-spacing:.08em;text-transform:uppercase;border:1px solid var(--paper);padding:4px 8px;white-space:nowrap;font-variant-numeric:tabular-nums}
+.dr-soft{border-color:var(--line);color:var(--dim)}
+.dr-spacer{flex:1}
+.dr-hud button{min-height:30px;padding:4px 9px;font-size:11px;border-width:1px}
+
+.dr-hint{position:absolute;left:50%;bottom:14px;transform:translateX(-50%);margin:0;max-width:58%;text-align:center;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--dim);pointer-events:none}
+.dr-touch{display:none}
+
+.dr-intro{position:absolute;inset:58px 14px 54px;margin:auto;max-width:640px;height:max-content;max-height:calc(100% - 112px);overflow:auto;display:grid;grid-template-columns:auto minmax(0,1fr);gap:22px;align-items:start;background:var(--ink);border:2px solid var(--paper);padding:22px}
+.dr-portrait{width:112px;height:112px;image-rendering:pixelated}
+.dr-intro-copy{display:flex;flex-direction:column;gap:10px;min-width:0}
+.dr-intro-copy p,.dr-intro-copy ul{margin:0;color:#dcdcdc;max-width:52ch}
+.dr-intro-copy ul{padding:0;list-style:none;display:grid;gap:4px}
+.dr-intro-copy li{display:grid;grid-template-columns:10px 1fr;gap:8px}
+.dr-intro-copy li::before{content:"";width:5px;height:5px;background:var(--paper);margin-top:.55em}
+.dr-intro-copy button{align-self:flex-start;margin-top:6px;min-height:42px;padding:9px 18px}
+.dr-kicker{margin:0;font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--dim)}
+.dr-title{margin:0;font-size:44px;line-height:1;font-weight:800;letter-spacing:.02em}
+
+.dr-card{position:absolute;display:flex;flex-direction:column;gap:9px;background:var(--ink);border:2px solid var(--paper);padding:16px;overflow:auto}
+.dr-card-side{top:58px;right:14px;width:278px;max-height:calc(100% - 112px)}
+.dr-card-bottom{left:14px;right:14px;bottom:54px;height:188px}
+.dr-card h2{margin:0;font-size:20px;line-height:1.15;text-transform:uppercase;letter-spacing:.03em}
+.dr-card p{margin:0}
+.dr-card button{width:100%}
+.dr-dim{color:var(--dim)}
+.dr-feedback{margin:0;font-size:11px;color:var(--dim)}
+.dr-sr{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+
+.dr-center{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:24px;text-align:center}
+
+/* SDK menus, re-inked for the dark. */
+.dr-game .rf-frame-scrim{background:#000000b8;color:var(--paper);padding-bottom:54px}
+.dr-game .rf-frame-menu{background:var(--ink);color:var(--paper);border:2px solid var(--paper)}
+.dr-game .rf-frame-menu-heading{border-color:var(--line)}
+.dr-game .rf-frame-menu-heading h2{text-transform:uppercase;letter-spacing:.06em}
+.dr-game .rf-frame-scrim button{border:1px solid var(--paper);background:var(--ink);color:var(--paper)}
+.dr-game .rf-frame-scrim button:hover:not(:disabled){background:var(--paper);color:var(--ink)}
+.dr-game .rf-frame-scrim .rf-frame-primary{background:var(--paper);color:var(--ink)}
+.dr-game .rf-frame-scrim .rf-frame-primary:hover:not(:disabled){background:var(--ink);color:var(--paper)}
+.dr-table{width:100%;border-collapse:collapse;margin:0 0 12px;font-variant-numeric:tabular-nums}
+.dr-table th,.dr-table td{text-align:left;padding:5px 4px;border-bottom:1px solid var(--line)}
+.dr-table th{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--dim)}
+.dr-table img,.dr-item img,.dr-reveal img{image-rendering:pixelated;vertical-align:middle}
+.dr-row{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px}
+.dr-item{display:grid;grid-template-columns:24px minmax(0,1fr) auto;gap:10px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line)}
+.dr-item small{display:block;color:var(--dim)}
+.dr-reveal{text-align:center}
+.dr-reveal h3{font-size:22px;text-transform:uppercase;letter-spacing:.04em}
+.dr-reveal .dr-row{justify-content:center}
+.dr-check{display:flex;gap:8px;align-items:center;margin:14px 0}
+
+@media (hover:none),(pointer:coarse){.dr-desk{display:none}.dr-touch{display:inline}}
+@media (max-width:600px){
+  .dr-wide{display:none}
+  .dr-hud{top:8px;left:8px;right:8px;gap:4px}
+  .dr-chip{font-size:10px;padding:3px 6px}
+  .dr-hud button{padding:3px 7px;font-size:10px}
+  .dr-hint{max-width:70%;bottom:10px;font-size:10px}
+  .dr-intro{inset:48px 8px 50px;grid-template-columns:1fr;gap:12px;padding:14px;max-height:calc(100% - 98px)}
+  .dr-portrait{width:72px;height:72px}
+  .dr-title{font-size:30px}
+  .dr-card{padding:12px;gap:7px}
+  .dr-card-side{width:220px;top:48px;right:8px;max-height:calc(100% - 98px)}
+  .dr-card-bottom{left:8px;right:8px;bottom:50px}
+  .dr-card h2{font-size:16px}
+}

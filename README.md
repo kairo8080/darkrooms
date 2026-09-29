@@ -6,7 +6,7 @@ Every room is pitch black. Your Friend's light shows the holes for a moment, the
 goes out, and you walk to the door from memory. Keys (1 RF, simulated) open the
 vault behind each door for a relic worth 0–10 RF.
 
-- **Play the preview:** https://kairo8080.github.io/darkrooms/
+- **Play the preview:** hosted on Vercel (link added after the first deploy)
 - **Needs:** a browser wallet on Robinhood mainnet (chain 4663) holding a
   hardwired Rare Friends Generations NFT (generation ≥ 1). No RF, ETH or
   signature is needed; the economy is simulated.
@@ -31,14 +31,15 @@ Open the printed URL (normally `http://localhost:4173`), connect your wallet,
 switch to Robinhood if asked, pick your Friend and choose **Enter the dark**.
 
 Build the static preview with `npm run build && npx friendsdk build games/darkrooms`;
-the output is `games/darkrooms/.friendsdk/`.
+the output is `games/darkrooms/.friendsdk/`. The hosted preview is built the same way
+on Vercel by [`vercel-build.sh`](vercel-build.sh) (settings in [`vercel.json`](vercel.json)).
 
 ## Checks
 
-[`.github/workflows/preview.yml`](.github/workflows/preview.yml) runs on every push:
-FriendSDK install and build, `friendsdk check`, `friendsdk build`, publish to the
-`gh-pages` branch, TypeScript typecheck, and browser checks at desktop and phone
-sizes using the SDK's mock wallet ([`tests/darkrooms.browser.mjs`](tests/darkrooms.browser.mjs)).
+[`.github/workflows/checks.yml`](.github/workflows/checks.yml) runs on every push:
+FriendSDK install and build, `friendsdk check`, `friendsdk build`, TypeScript
+typecheck, and browser checks at desktop and phone sizes using the SDK's mock
+wallet ([`tests/darkrooms.browser.mjs`](tests/darkrooms.browser.mjs)). All pass.
 
 ## License
 

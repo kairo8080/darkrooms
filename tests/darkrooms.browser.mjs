@@ -9,6 +9,7 @@ const check = async ({ game }) => {
   const before = await board.getAttribute("data-x") + "," + await board.getAttribute("data-y");
   await board.press("ArrowUp");
   await board.press("ArrowRight");
+  await board.evaluate(node => new Promise(done => requestAnimationFrame(() => requestAnimationFrame(done))));
   const phase = await board.getAttribute("data-phase");
   const after = await board.getAttribute("data-x") + "," + await board.getAttribute("data-y");
   if (!["walk", "fell", "door"].includes(phase)) throw new Error(`Unexpected phase after stepping: ${phase}`);

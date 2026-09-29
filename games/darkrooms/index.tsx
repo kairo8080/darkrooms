@@ -311,6 +311,8 @@ export default function Darkrooms({ friendId, client, paused }: GameComponentPro
       } else sfx("step");
     }
     setStats({ steps: e.steps, near: e.near, bonks: e.bonks });
+    const node = board.current;
+    if (node) { node.dataset.phase = e.phase; node.dataset.x = String(e.pos.x); node.dataset.y = String(e.pos.y); }
   };
 
   const actions = useRef({ step });

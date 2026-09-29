@@ -1,0 +1,7 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": null,
+  "installCommand": "echo 'FriendSDK dependencies are installed by vercel-build.sh'",
+  "buildCommand": "bash vercel-build.sh",
+  "outputDirectory": "public"
+}

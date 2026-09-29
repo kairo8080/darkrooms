@@ -6,7 +6,7 @@ Every room is pitch black. Your Friend's light shows the holes for a moment, the
 goes out, and you walk to the door from memory. Keys (1 RF, simulated) open the
 vault behind each door for a relic worth 0–10 RF.
 
-- **Play the preview:** hosted on Vercel (link added after the first deploy)
+- **Play the preview:** https://darkrooms-gamma.vercel.app
 - **Needs:** a browser wallet on Robinhood mainnet (chain 4663) holding a
   hardwired Rare Friends Generations NFT (generation ≥ 1). No RF, ETH or
   signature is needed; the economy is simulated.

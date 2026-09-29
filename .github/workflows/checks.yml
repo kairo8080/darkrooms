@@ -1,4 +1,4 @@
-name: DARKROOMS preview
+name: DARKROOMS checks
 
 on:
   push:
@@ -6,10 +6,10 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
-  group: preview
+  group: checks
   cancel-in-progress: true
 
 env:
@@ -41,24 +41,11 @@ jobs:
 
       - name: Validate the game (friendsdk check)
         working-directory: sdk
-        run: npx friendsdk check games/darkrooms
+        run: node scripts/dev-game.mjs check games/darkrooms
 
       - name: Build the static preview (friendsdk build)
         working-directory: sdk
-        run: npx friendsdk build games/darkrooms
-
-      - name: Publish the preview to the gh-pages branch
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          cd sdk/games/darkrooms/.friendsdk
-          touch .nojekyll
-          git init -q -b gh-pages
-          git config user.name "github-actions[bot]"
-          git config user.email "41898333+github-actions[bot]@users.noreply.github.com"
-          git add -A
-          git commit -qm "Preview from ${GITHUB_SHA::7}"
-          git push -f "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" gh-pages
+        run: node scripts/dev-game.mjs build games/darkrooms
 
       - name: Typecheck
         working-directory: sdk

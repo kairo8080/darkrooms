@@ -1,14 +1,51 @@
-/* Trusted runtime page (SDK host): a black page around the game and a 1-bit toolbar.
-   SDK menus and confirmations keep their own readable light styling. */
+/* Trusted runtime page (SDK host) styling for DARKROOMS.
+   - A black page around the game and a 1-bit toolbar.
+   - A title screen on the runtime's pre-game status (wallet / Friend selection):
+     the pixel DARKROOMS logo above, a short description and credit below.
+   - SDK dialogs re-inked black and white. Every SDK control keeps its place and behavior. */
+
 html:root, html body { background: #000; }
 .rf-game-frame { background: #000; border-color: #333; }
-.rf-runtime-status { background: #000; color: #fff; }
-.rf-runtime-status .rf-frame-primary { background: #fff; color: #000; border-color: #fff; }
+
+/* Toolbar: Local preview · Friend · Friend wallet */
 .rf-game-frame .rf-frame-toolbar > *,
 .rf-game-frame .rf-frame-toolbar button { background: #000; color: #fff; border-color: #fff; }
 .rf-game-frame .rf-frame-toolbar button:hover:not(:disabled) { background: #fff; color: #000; }
-.rf-game-frame .rf-frame-toolbar button:focus-visible,
+.rf-game-frame .rf-frame-toolbar button:focus-visible { outline-color: #fff; }
+
+/* Title screen behind the wallet and Friend dialogs */
+.rf-runtime-status { background: #000; color: #9b9b9b; letter-spacing: .02em; }
+.rf-runtime-status::before {
+  content: ""; position: absolute; top: 7%; left: 50%; transform: translateX(-50%);
+  width: min(62%, 448px); aspect-ratio: 56 / 9;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 56 9' shape-rendering='crispEdges'%3E%3Cg fill='%23fff'%3E%3Crect x='0' y='1' width='1' height='1'/%3E%3Crect x='1' y='1' width='1' height='1'/%3E%3Crect x='2' y='1' width='1' height='1'/%3E%3Crect x='3' y='1' width='1' height='1'/%3E%3Crect x='0' y='2' width='1' height='1'/%3E%3Crect x='4' y='2' width='1' height='1'/%3E%3Crect x='0' y='3' width='1' height='1'/%3E%3Crect x='4' y='3' width='1' height='1'/%3E%3Crect x='0' y='4' width='1' height='1'/%3E%3Crect x='4' y='4' width='1' height='1'/%3E%3Crect x='0' y='5' width='1' height='1'/%3E%3Crect x='4' y='5' width='1' height='1'/%3E%3Crect x='0' y='6' width='1' height='1'/%3E%3Crect x='4' y='6' width='1' height='1'/%3E%3Crect x='0' y='7' width='1' height='1'/%3E%3Crect x='1' y='7' width='1' height='1'/%3E%3Crect x='2' y='7' width='1' height='1'/%3E%3Crect x='3' y='7' width='1' height='1'/%3E%3Crect x='7' y='1' width='1' height='1'/%3E%3Crect x='8' y='1' width='1' height='1'/%3E%3Crect x='9' y='1' width='1' height='1'/%3E%3Crect x='6' y='2' width='1' height='1'/%3E%3Crect x='10' y='2' width='1' height='1'/%3E%3Crect x='6' y='3' width='1' height='1'/%3E%3Crect x='10' y='3' width='1' height='1'/%3E%3Crect x='6' y='4' width='1' height='1'/%3E%3Crect x='7' y='4' width='1' height='1'/%3E%3Crect x='8' y='4' width='1' height='1'/%3E%3Crect x='9' y='4' width='1' height='1'/%3E%3Crect x='10' y='4' width='1' height='1'/%3E%3Crect x='6' y='5' width='1' height='1'/%3E%3Crect x='10' y='5' width='1' height='1'/%3E%3Crect x='6' y='6' width='1' height='1'/%3E%3Crect x='10' y='6' width='1' height='1'/%3E%3Crect x='6' y='7' width='1' height='1'/%3E%3Crect x='10' y='7' width='1' height='1'/%3E%3Crect x='12' y='1' width='1' height='1'/%3E%3Crect x='13' y='1' width='1' height='1'/%3E%3Crect x='14' y='1' width='1' height='1'/%3E%3Crect x='15' y='1' width='1' height='1'/%3E%3Crect x='12' y='2' width='1' height='1'/%3E%3Crect x='16' y='2' width='1' height='1'/%3E%3Crect x='12' y='3' width='1' height='1'/%3E%3Crect x='16' y='3' width='1' height='1'/%3E%3Crect x='12' y='4' width='1' height='1'/%3E%3Crect x='13' y='4' width='1' height='1'/%3E%3Crect x='14' y='4' width='1' height='1'/%3E%3Crect x='15' y='4' width='1' height='1'/%3E%3Crect x='12' y='5' width='1' height='1'/%3E%3Crect x='14' y='5' width='1' height='1'/%3E%3Crect x='12' y='6' width='1' height='1'/%3E%3Crect x='15' y='6' width='1' height='1'/%3E%3Crect x='12' y='7' width='1' height='1'/%3E%3Crect x='16' y='7' width='1' height='1'/%3E%3Crect x='18' y='1' width='1' height='1'/%3E%3Crect x='22' y='1' width='1' height='1'/%3E%3Crect x='18' y='2' width='1' height='1'/%3E%3Crect x='21' y='2' width='1' height='1'/%3E%3Crect x='18' y='3' width='1' height='1'/%3E%3Crect x='20' y='3' width='1' height='1'/%3E%3Crect x='18' y='4' width='1' height='1'/%3E%3Crect x='19' y='4' width='1' height='1'/%3E%3Crect x='18' y='5' width='1' height='1'/%3E%3Crect x='20' y='5' width='1' height='1'/%3E%3Crect x='18' y='6' width='1' height='1'/%3E%3Crect x='21' y='6' width='1' height='1'/%3E%3Crect x='18' y='7' width='1' height='1'/%3E%3Crect x='22' y='7' width='1' height='1'/%3E%3C/g%3E%3Crect x='25' y='0' width='31' height='9' fill='%23fff'/%3E%3Cg fill='%23000'%3E%3Crect x='26' y='1' width='1' height='1'/%3E%3Crect x='27' y='1' width='1' height='1'/%3E%3Crect x='28' y='1' width='1' height='1'/%3E%3Crect x='29' y='1' width='1' height='1'/%3E%3Crect x='26' y='2' width='1' height='1'/%3E%3Crect x='30' y='2' width='1' height='1'/%3E%3Crect x='26' y='3' width='1' height='1'/%3E%3Crect x='30' y='3' width='1' height='1'/%3E%3Crect x='26' y='4' width='1' height='1'/%3E%3Crect x='27' y='4' width='1' height='1'/%3E%3Crect x='28' y='4' width='1' height='1'/%3E%3Crect x='29' y='4' width='1' height='1'/%3E%3Crect x='26' y='5' width='1' height='1'/%3E%3Crect x='28' y='5' width='1' height='1'/%3E%3Crect x='26' y='6' width='1' height='1'/%3E%3Crect x='29' y='6' width='1' height='1'/%3E%3Crect x='26' y='7' width='1' height='1'/%3E%3Crect x='30' y='7' width='1' height='1'/%3E%3Crect x='33' y='1' width='1' height='1'/%3E%3Crect x='34' y='1' width='1' height='1'/%3E%3Crect x='35' y='1' width='1' height='1'/%3E%3Crect x='32' y='2' width='1' height='1'/%3E%3Crect x='36' y='2' width='1' height='1'/%3E%3Crect x='32' y='3' width='1' height='1'/%3E%3Crect x='36' y='3' width='1' height='1'/%3E%3Crect x='32' y='4' width='1' height='1'/%3E%3Crect x='36' y='4' width='1' height='1'/%3E%3Crect x='32' y='5' width='1' height='1'/%3E%3Crect x='36' y='5' width='1' height='1'/%3E%3Crect x='32' y='6' width='1' height='1'/%3E%3Crect x='36' y='6' width='1' height='1'/%3E%3Crect x='33' y='7' width='1' height='1'/%3E%3Crect x='34' y='7' width='1' height='1'/%3E%3Crect x='35' y='7' width='1' height='1'/%3E%3Crect x='39' y='1' width='1' height='1'/%3E%3Crect x='40' y='1' width='1' height='1'/%3E%3Crect x='41' y='1' width='1' height='1'/%3E%3Crect x='38' y='2' width='1' height='1'/%3E%3Crect x='42' y='2' width='1' height='1'/%3E%3Crect x='38' y='3' width='1' height='1'/%3E%3Crect x='42' y='3' width='1' height='1'/%3E%3Crect x='38' y='4' width='1' height='1'/%3E%3Crect x='42' y='4' width='1' height='1'/%3E%3Crect x='38' y='5' width='1' height='1'/%3E%3Crect x='42' y='5' width='1' height='1'/%3E%3Crect x='38' y='6' width='1' height='1'/%3E%3Crect x='42' y='6' width='1' height='1'/%3E%3Crect x='39' y='7' width='1' height='1'/%3E%3Crect x='40' y='7' width='1' height='1'/%3E%3Crect x='41' y='7' width='1' height='1'/%3E%3Crect x='44' y='1' width='1' height='1'/%3E%3Crect x='48' y='1' width='1' height='1'/%3E%3Crect x='44' y='2' width='1' height='1'/%3E%3Crect x='45' y='2' width='1' height='1'/%3E%3Crect x='47' y='2' width='1' height='1'/%3E%3Crect x='48' y='2' width='1' height='1'/%3E%3Crect x='44' y='3' width='1' height='1'/%3E%3Crect x='46' y='3' width='1' height='1'/%3E%3Crect x='48' y='3' width='1' height='1'/%3E%3Crect x='44' y='4' width='1' height='1'/%3E%3Crect x='46' y='4' width='1' height='1'/%3E%3Crect x='48' y='4' width='1' height='1'/%3E%3Crect x='44' y='5' width='1' height='1'/%3E%3Crect x='48' y='5' width='1' height='1'/%3E%3Crect x='44' y='6' width='1' height='1'/%3E%3Crect x='48' y='6' width='1' height='1'/%3E%3Crect x='44' y='7' width='1' height='1'/%3E%3Crect x='48' y='7' width='1' height='1'/%3E%3Crect x='51' y='1' width='1' height='1'/%3E%3Crect x='52' y='1' width='1' height='1'/%3E%3Crect x='53' y='1' width='1' height='1'/%3E%3Crect x='54' y='1' width='1' height='1'/%3E%3Crect x='50' y='2' width='1' height='1'/%3E%3Crect x='50' y='3' width='1' height='1'/%3E%3Crect x='51' y='4' width='1' height='1'/%3E%3Crect x='52' y='4' width='1' height='1'/%3E%3Crect x='53' y='4' width='1' height='1'/%3E%3Crect x='54' y='5' width='1' height='1'/%3E%3Crect x='54' y='6' width='1' height='1'/%3E%3Crect x='50' y='7' width='1' height='1'/%3E%3Crect x='51' y='7' width='1' height='1'/%3E%3Crect x='52' y='7' width='1' height='1'/%3E%3Crect x='53' y='7' width='1' height='1'/%3E%3C/g%3E%3C/svg%3E") center / contain no-repeat;
+  pointer-events: none;
+}
+.rf-runtime-status::after {
+  content: "Every room is pitch black. Your Friend's light shows the holes for a moment,\A then you walk it to the door from memory.\A\A A Rare Friends Vibeathon entry by x.com/kairopeng";
+  position: absolute; left: 16px; right: 16px; bottom: 64px;
+  white-space: pre-line; text-align: center; font: 12px/1.6 ui-monospace, monospace; color: #9b9b9b;
+  pointer-events: none;
+}
+.rf-runtime-status .rf-frame-primary { background: #fff; color: #000; border-color: #fff; }
 .rf-runtime-status button:focus-visible { outline-color: #fff; }
+
+/* SDK dialogs (Friend picker, wallet, confirmations) in 1-bit */
+.rf-game-frame .rf-frame-scrim { background: #000000a6; color: #fff; }
+/* On the title screen, keep the logo bright: no dimming behind the Friend picker. */
+.rf-game-frame:has(.rf-runtime-status) .rf-frame-scrim { background: transparent; }
+.rf-game-frame .rf-frame-menu { background: #000; border: 2px solid #fff; }
+.rf-game-frame .rf-frame-menu-heading { border-color: #333; }
+.rf-game-frame .rf-frame-menu-heading h2 { text-transform: uppercase; letter-spacing: .06em; }
+.rf-game-frame .rf-frame-menu-footer { border-color: #333; }
+.rf-game-frame .rf-frame-scrim button { background: #000; color: #fff; border-color: #fff; }
+.rf-game-frame .rf-frame-scrim button:hover:not(:disabled) { background: #fff; color: #000; }
+.rf-game-frame .rf-frame-scrim button:focus-visible { outline: 2px dashed #fff; outline-offset: 2px; }
+.rf-game-frame .rf-frame-scrim .rf-frame-primary { background: #fff; color: #000; }
+.rf-game-frame .rf-frame-scrim .rf-frame-primary:hover:not(:disabled) { background: #000; color: #fff; }
+.rf-game-frame .rf-frame-friends button[aria-pressed="true"] { background: #fff; color: #000; }
+.rf-game-frame .rf-frame-note, .rf-game-frame .rf-frame-friends small { color: #9b9b9b; }
+.rf-game-frame .rf-frame-friends button[aria-pressed="true"] small { color: #333; }
 
 /* Landscape by default, portrait on narrow phones. */
 @media (max-width: 600px) and (orientation: portrait) {
@@ -16,4 +53,8 @@ html:root, html body { background: #000; }
     --rf-game-max-width: 480px;
     --rf-game-aspect-ratio: 3 / 4;
   }
+}
+@media (max-width: 600px) {
+  .rf-runtime-status::before { top: 5%; width: 70%; }
+  .rf-runtime-status::after { content: "A Rare Friends Vibeathon entry by x.com/kairopeng"; bottom: 50px; font-size: 10px; }
 }

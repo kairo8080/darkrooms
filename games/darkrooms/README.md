@@ -63,7 +63,10 @@ No trading, creator fees, wearable NFTs or persistence are implemented.
 The Friend is drawn from its canonical 16 × 16 Generations sprite (black mask,
 one-pixel white halo, integer scale, all eight walk and idle frames) read through
 the SDK sprite reader. Rooms, the door and relic icons are original 1-bit pixel
-art made for this game. The page around the game is black too (`host.css`).
+art made for this game. The page around the game is black too: `host.css` turns
+the runtime's wallet and Friend-selection screen into a title screen (pixel
+DARKROOMS logo, one-line description, vibeathon credit) and inks the SDK dialogs
+and toolbar in black and white without changing any runtime control.
 
 Sound is a small chip-style synth written for this game: 12.5%, 25% and 50%
 pulse channels, a triangle bass and a noise channel, with volume and pitch

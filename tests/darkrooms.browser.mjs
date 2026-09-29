@@ -16,8 +16,9 @@ const check = async ({ game }) => {
   if (phase === "walk" && before === after) throw new Error("The Friend did not move and no bonk was possible from the start tile.");
   await game.getByRole("button", { name: "Settings" }).click();
   const dialog = game.getByRole("dialog");
-  await dialog.getByRole("button", { name: "Sound off" }).click();
+  // Sound is on by default: switch it off, then back on.
   await dialog.getByRole("button", { name: "Sound on" }).click();
+  await dialog.getByRole("button", { name: "Sound off" }).click();
   await dialog.getByRole("button", { name: "Close Settings" }).click();
   await game.getByRole("button", { name: "Shop" }).click();
   await game.getByRole("dialog").getByText("The Last Light").waitFor();
